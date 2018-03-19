@@ -1,30 +1,95 @@
 ---
-title: "report"
+title: "Report - LDA Lab"
 author: "Jose Munoz Angulo, Vivien Marcault, Baptiste Rigondaud"
 date: "March 19, 2018"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, echo=FALSE}
+library("class")
+library("MASS")
+
+NAm2 = read.table("NAm2.txt", header=TRUE)
+
+cont <- function(x)
+{
+  if (x %in% c("Canada"))
+      cont<-"NorthAmerica"
+  else if (x %in% c("Guatemala","Mexico","Panama","CostaRica"))
+      cont<-"CentralAmerica"
+  else
+      cont<-"SouthAmerica"
+  return (factor(cont))
+}
+contID<-sapply(as.character(NAm2[,4]),FUN=cont)
 ```
 
-## R Markdown
+## Question a)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Creation of the labels:
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+labels<-rep(1: 2, each=494/2)
+set=sample(labels, 494)
 ```
 
-## Including Plots
+Creation of the table which contains the continent of origin and the genetic markers:
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+NAcont<-cbind(contID=contID,NAm2[,-(1:8)])
+NAcont[,1]<-factor(NAcont[,1])
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Computation of the lda:
+
+```{r}
+
+#lda(contID~., data=NAcont, subset=(set==1)) Does not work
+```
+
+Since some predictors seem to be constant in some classes (zero-variance), the computation of the LDA won't be possible. In fact, since the equality of the covariances is assumed, //TODO: continue
+
+## Question b)
+
+In order to peform such operation, we use the code below:
+
+```{r}
+withinvar<-apply(NAcont[(set==1),-1],FUN=function(x){tapply(x,NAcont[(set==1),1],FUN=var)},MARGIN=2)
+bool<-as.logical(apply(withinvar,FUN=function(x){prod(x!=0)},MARGIN=2))
+NAcont2<-cbind(contID=contID,(NAm2[,-(1:8)])[,bool])
+NAcont2[,1]<-factor(NAcont[,1])
+
+#Count the number of remaining markers
+length(NAcont2[1,])-1
+```
+The number of remaining markers is $3040$. The markers that were removed from the model have a variance of zero for at least one continent. This means that there are markers that are not carrying information since they are constant for every continent. Thus there are not relevant for the model. However, since there are removed markers constant for only one continent, some information is lost.
+
+In order to learn the model, we run:
+```{r, echo=FALSE}
+model=lda(contID~., data=NAcont2, subset=(set==1))
+```
+```{r, eval=FALSE}
+lda(contID~., data=NAcont2, subset=(set==1))
+```
+
+## Question c)
+
+In order to predict the original populations of individuals who have not been trained, we use the following code:
+
+```{r}
+pre = predict(model, newdata=subset(NAcont[, -1], set==2),type="class")
+pre$class
+```
+
+## Question d)
+
+Computation of the confusion matrix:
+
+```{r}
+confusion = table(subset(NAcont[, 1], set==2), pre$class)
+barplot(confusion, legend.text=TRUE)
+#summary(subset(NAcont[, 1], set==1))
+```
+
+From this representation of the confusion matrix, we can see that there are non-negligible errors that have been made during the prediction. A first hypothesis can be that the South American and Central American populations may have been //TODO: jose will do the american history
+
