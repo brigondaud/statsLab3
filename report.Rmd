@@ -91,14 +91,18 @@ barplot(confusion, legend.text=TRUE)
 #summary(subset(NAcont[, 1], set==1))
 ```
 
-From this representation of the confusion matrix we can see that there are non-negligible errors that have been made during the prediction. A first hypothesis can be that the South American and Central American populations may have been //TODO: jose will do the american history
+From this representation of the confusion matrix we can see that there are non-negligible errors that have been made during the prediction. Our hypothesis is that the South American and Central American populations might have been more in contact with one another, thus mixing the gene pool and having more genetic traits in common. While the North American population genes remained untouched.
 
 ## Question e)
 
-In order to compute the prediction error, //TODO: jose will make a good explanation of the computation, done by the following script:
+In order to compute the prediction error, we calculate by subtracting the number
+of well predicted values, i.e., the sum of the diagonal in the confusion matrix
+to the total number of samples used in the validation phase. This is the total
+value of mismatched samples. We divide the number of samples to the previously
+obtained value to calculate the mismatching ratio.
 
 ```{r}
-error = (sum(confusion) - sum(diag(confusion)))/sum(confusion)
+error <- (sum(confusion) - sum(diag(confusion)))/sum(confusion)
 error
 ```
 
