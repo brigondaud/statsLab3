@@ -93,3 +93,15 @@ barplot(confusion, legend.text=TRUE)
 
 From this representation of the confusion matrix we can see that there are non-negligible errors that have been made during the prediction. A first hypothesis can be that the South American and Central American populations may have been //TODO: jose will do the american history
 
+## Question e)
+
+In order to compute the prediction error, //TODO: jose will make a good explanation of the computation, done by the following script:
+
+```{r}
+error = (sum(confusion) - sum(diag(confusion)))/sum(confusion)
+error
+```
+
+## Qestion f)
+
+// Proposé: avoir autant d'individus pour l'apprentissage --> éviter de biaiser pour une population sur-représentée --> prendre un set plus intelligement. Prendre la population la moinsn représentée, tu la divises par deux, une partie part dans set1 et l'autre set2 et équilibrer le reste en fonction
