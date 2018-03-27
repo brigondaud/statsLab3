@@ -60,12 +60,12 @@ NAcont2<-cbind(contID=contID,(NAm2[,-(1:8)])[,bool])
 NAcont2[,1]<-factor(NAcont[,1])
 
 #Count the number of remaining markers
-length(NAcont2[1,])-1
+count <- length(NAcont2[1,])-1
 ```
-The number of remaining markers is $3040$. The markers that were removed from the model have a variance of zero for at least one continent. This means that there are markers that do not yield information since they are constant for every continent. Thus, there are not relevant for the model. However, since some of the markers that were removed are constant for only one continent, some information is lost.
+The number of remaining markers is `count`. The markers that were removed from the model have a variance of zero for at least one continent. This means that there are markers that do not yield information since they are constant for every continent. Thus, there are not relevant for the model. However, since some of the markers that were removed are constant for only one continent, some information is lost.
 
 In order to learn the model, we run:
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 model=lda(contID~., data=NAcont2, subset=(set==1))
 ```
 ```{r, eval=FALSE}
@@ -88,7 +88,6 @@ Computation of the confusion matrix:
 ```{r}
 confusion = table(subset(NAcont[, 1], set==2), pre$class)
 barplot(confusion, legend.text=TRUE)
-#summary(subset(NAcont[, 1], set==1))
 ```
 
 From this representation of the confusion matrix we can see that there are non-negligible errors that have been made during the prediction. Our hypothesis is that the South American and Central American populations might have been more in contact with one another, thus mixing the gene pool and having more genetic traits in common. While the North American population genes remained untouched.
@@ -106,6 +105,42 @@ error <- (sum(confusion) - sum(diag(confusion)))/sum(confusion)
 error
 ```
 
-## Qestion f)
+## Question f)
+```{r, echo=FALSE}
+set = function(N, k) {
+  r <- floor(N / k) # Number of values for each fold.
+  miss <- N - k * r # Missing values.
+  
+  t <- c(rep(r, times = k)) # Number of samples in each fold.
+  t <- t + sample(rep(0:1, times = c(miss, k - miss))) # Add missing values
+  
+  sample(rep(1:k, times = t)) # Set selection vector
+}
+```
+```{r, warning=FALSE}
+# K-fold cross validation.
+k <- 10 # Number of folds
+set <- set(494, k) # Set selection vector.
+errors <- c()
 
+for (i in 1:k) {
+  # Remove markers
+  withinvar<-apply(NAcont[(set!=i),-1],FUN=function(x){tapply(x,NAcont[(set!=i),1],FUN=var)},MARGIN=2)
+  bool<-as.logical(apply(withinvar,FUN=function(x){prod(x!=0)},MARGIN=2))
+  NAcont2<-cbind(contID=contID,(NAm2[,-(1:8)])[,bool])
+  NAcont2[,1]<-factor(NAcont[,1])
+  
+  # Generate model
+  model <- lda(contID~., data=NAcont2, subset=(set!=i))
+  
+  # Predict values
+  pre <- predict(model, newdata=subset(NAcont[, -1], set == i),type="class")
+  
+  # Calculate error
+  confusion <- table(subset(NAcont[, 1], set == i), pre$class)
+  errors <- c(errors, (sum(confusion) - sum(diag(confusion)))/sum(confusion))
+}
+
+print(errors)
+```
 // Proposé: avoir autant d'individus pour l'apprentissage --> éviter de biaiser pour une population sur-représentée --> prendre un set plus intelligement. Prendre la population la moinsn représentée, tu la divises par deux, une partie part dans set1 et l'autre set2 et équilibrer le reste en fonction
