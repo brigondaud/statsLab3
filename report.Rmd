@@ -47,7 +47,7 @@ Computation of the lda:
 #lda(contID~., data=NAcont, subset=(set==1)) Does not work
 ```
 
-Since some predictors seem to be constant in some classes (zero-variance), the computation of the LDA won't be possible. In fact, since the equality of the covariances is assumed, //TODO: continue
+Since some predictors seem to be constant in some classes (zero-variance), the computation of the LDA won't be possible.
 
 ## Question b)
 
@@ -62,7 +62,7 @@ NAcont2[,1]<-factor(NAcont[,1])
 #Count the number of remaining markers
 count <- length(NAcont2[1,])-1
 ```
-The number of remaining markers is `count`. The markers that were removed from the model have a variance of zero for at least one continent. This means that there are markers that do not yield information since they are constant for every continent. Thus, there are not relevant for the model. However, since some of the markers that were removed are constant for only one continent, some information is lost.
+The number of remaining markers is `r count`. The markers that were removed from the model have a variance of zero for at least one continent. This means that there are markers that do not yield information since they are constant for every continent. Thus, there are not relevant for the model. However, since some of the markers that were removed are constant for only one continent, some information is lost.
 
 In order to learn the model, we run:
 ```{r, echo=FALSE, warning=FALSE}
@@ -117,7 +117,7 @@ set = function(N, k) {
   sample(rep(1:k, times = t)) # Set selection vector
 }
 ```
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval=FALSE}
 # K-fold cross validation.
 k <- 10 # Number of folds
 set <- set(494, k) # Set selection vector.
