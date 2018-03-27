@@ -106,6 +106,9 @@ error
 ```
 
 ## Question f)
+
+To improve the validation process, we propose to use a k-fold cross validation. We use the following code for the implementation.
+
 ```{r, echo=FALSE}
 set = function(N, k) {
   r <- floor(N / k) # Number of values for each fold.
@@ -117,7 +120,7 @@ set = function(N, k) {
   sample(rep(1:k, times = t)) # Set selection vector
 }
 ```
-```{r, warning=FALSE, eval=FALSE}
+```{r, warning=FALSE}
 # K-fold cross validation.
 k <- 10 # Number of folds
 set <- set(494, k) # Set selection vector.
@@ -143,4 +146,8 @@ for (i in 1:k) {
 
 print(errors)
 ```
-// Proposé: avoir autant d'individus pour l'apprentissage --> éviter de biaiser pour une population sur-représentée --> prendre un set plus intelligement. Prendre la population la moinsn représentée, tu la divises par deux, une partie part dans set1 et l'autre set2 et équilibrer le reste en fonction
+```{r, echo=FALSE}
+mean_errors <- mean(errors)
+```
+
+As we can observe using this method with `r k` folds, the mean error, in this case `r mean_errors`, is less than the prediction error that we obtained before, proving that this is in fact an improvement over the classical approach.
